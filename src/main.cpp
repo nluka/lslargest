@@ -16,12 +16,19 @@ enum class ExitCode {
   InvalidOptionValue
 };
 
+void process_numeric_option(
+  unsigned long long & option,
+  char const * flag,
+  char const * name,
+  char const * value
+);
+
 int main(int const argc, char const * const * const argv) {
   if (argc <= 1) {
     std::cout
       << "Error: no arguments specified, use -h or --help for usage info"
       << std::endl;
-    return static_cast<int>(ExitCode::NoArgsSpecified);
+    exit(static_cast<int>(ExitCode::NoArgsSpecified));
   }
 
   // handle help/version options
@@ -33,11 +40,11 @@ int main(int const argc, char const * const * const argv) {
       std::cout
         << "Usage: SEARCHPATH [OPTION]...\n"
         << "Options:\n"
-        << "  -h, --help     prints out this info\n"
-        << "  -v, --version  prints out program version\n"
-        << "  -n, --number   specifies how many entries to list (defaults to 10)\n"
+        << "  -h, --help      prints out this info\n"
+        << "  -v, --version   prints out program version\n"
+        << "  -n, --number    specifies how many entries to list [default: 10]\n"
+        << "  -m, --max-size  specifies the max file size (in bytes) to consider [default: any size]\n"
         // << "  -s, --save-output  specifies the pathname of the file to save the output to\n"
-        // << "  -m, --max-size     specifies the max file size to consider\n"
         << std::endl;
       exit(static_cast<int>(ExitCode::Success));
     } else if (
@@ -67,6 +74,7 @@ int main(int const argc, char const * const * const argv) {
   }
 
   size_t optionNumber = 10;
+  uintmax_t optionMaxSize = static_cast<uintmax_t>(-1);
 
   // process options
   for (int i = 2; i < argc; ++i) {
@@ -74,20 +82,13 @@ int main(int const argc, char const * const * const argv) {
       strcmp(argv[i], "-n") == 0 ||
       strcmp(argv[i], "--number") == 0
     ) {
-      try {
-        optionNumber = std::stoull(argv[i + 1]);
-      } catch (...) {
-        std::cout
-          << "Error: failed to parse value `"
-          << argv[i + 1]
-          << "` for -n/--number option\n"
-          << std::endl;
-        exit(static_cast<int>(ExitCode::InvalidOptionValue));
-      }
-      if (optionNumber == 0) {
-        std::cout << "Error: -n/--number option value must be > 0\n" << std::endl;
-        exit(static_cast<int>(ExitCode::InvalidOptionValue));
-      }
+      process_numeric_option(optionNumber, "-n", "--number", argv[i + 1]);
+      ++i; // skip next arg since we used it as the value for this one
+    } else if (
+      strcmp(argv[i], "-m") == 0 ||
+      strcmp(argv[i], "--max-size") == 0
+    ) {
+      process_numeric_option(optionMaxSize, "-m", "--max-size", argv[i + 1]);
       ++i; // skip next arg since we used it as the value for this one
     } else {
       std::cout << "Error: unknown option `" << argv[i] << "`\n" << std::endl;
@@ -115,27 +116,45 @@ int main(int const argc, char const * const * const argv) {
       fs::recursive_directory_iterator(searchPath)
     ) {
       ++entriesFound;
-
       if (fs::is_directory(entryPath)) {
         continue;
       }
-
       uintmax_t const entrySize = fs::file_size(entryPath);
-
       if (
-        largestEntries.is_full() &&
-        entrySize < largestEntries.smallest_size()
+        entrySize > optionMaxSize ||
+        (largestEntries.is_full() &&
+        entrySize < largestEntries.smallest_size())
       ) {
         continue;
       }
-
       largestEntries.insert(entryPath, entrySize);
     }
-
     std::cout << entriesFound << " entries found\n";
   }
 
   largestEntries.display(std::cout);
 
   exit(static_cast<int>(ExitCode::Success));
+}
+
+void process_numeric_option(
+  unsigned long long & option,
+  char const * const flag,
+  char const * const name,
+  char const * const value
+) {
+  try {
+    option = std::stoull(value);
+  } catch (...) {
+    std::cout
+      << "Error: failed to parse value `" << value  << "` for " << flag << '/'
+      << name << " option\n" << std::endl;
+    exit(static_cast<int>(ExitCode::InvalidOptionValue));
+  }
+  if (option == 0) {
+    std::cout
+      << "Error: " << flag << '/' << name << " option value must be > 0\n"
+      << std::endl;
+    exit(static_cast<int>(ExitCode::InvalidOptionValue));
+  }
 }

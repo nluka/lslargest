@@ -102,6 +102,10 @@ void format_path_str(std::string & str) {
 }
 
 void LargestEntries::display(std::ostream &os) const {
+  if (m_entries.size() == 0) {
+    return;
+  }
+
   os
     << "--------------------------\n"
     << "RANK  SIZE        PATHNAME\n";
@@ -119,12 +123,10 @@ void LargestEntries::display(std::ostream &os) const {
     format_path_str(entryPathStr);
 
     os
-      << std::setw(4) << std::left << rank << "  "
+      << std::setw(4) << std::left << rank++ << "  "
       << std::setw((sizeof formattedBytesStr) - 1) << std::left
         << formattedBytesStr << "  "
       << entryPathStr << '\n';
-
-    ++rank;
   }
 
   os << std::endl;
