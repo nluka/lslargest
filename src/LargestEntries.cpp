@@ -10,8 +10,8 @@ Entry::Entry() : path{}, size{} {}
 Entry::Entry(std::filesystem::path const & path, uintmax_t const size)
 : path{path}, size{size} {}
 
-LargestEntries::LargestEntries(size_t max)
-: m_max{max}, m_entries{} {
+LargestEntries::LargestEntries(size_t const rootPathLength, size_t const max)
+: m_rootPathLength{rootPathLength}, m_max{max}, m_entries{} {
   m_entries.reserve(max);
 }
 
@@ -92,17 +92,9 @@ void format_bytes(uintmax_t bytes, char * out, size_t outSize) {
   strcat(strcat(out, " "), sizes[i]);
 }
 
-void format_path_str(std::string & str) {
-  for (size_t i = 0; i < str.length(); ++i) {
-    char const ch = str[i];
-    if ((ch == '/' || ch == '\\') && ch != fs::path::preferred_separator) {
-      str[i] = fs::path::preferred_separator;
-    }
-  }
-}
-
 void LargestEntries::display(std::ostream &os) const {
   if (m_entries.size() == 0) {
+    os << "No matches" << std::endl;
     return;
   }
 
@@ -119,15 +111,12 @@ void LargestEntries::display(std::ostream &os) const {
       sizeof formattedBytesStr
     );
 
-    std::string entryPathStr = entry.path.string();
-    format_path_str(entryPathStr);
-
     os
       << std::setw(4) << std::left << rank++ << "  "
       << std::setw((sizeof formattedBytesStr) - 1) << std::left
         << formattedBytesStr << "  "
-      << entryPathStr << '\n';
+      << (entry.path.string().c_str() + m_rootPathLength) << '\n';
   }
 
-  os << std::endl;
+  os << "--------------------------" << std::endl;
 }

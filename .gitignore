@@ -1,4 +1,6 @@
 .vscode
 bin
-lslargest-vs/.vs
+empty
 intermediates
+lslargest-vs/.vs
+out

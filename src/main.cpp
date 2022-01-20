@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <string>
 #include <iomanip>
+#include <fstream>
 #include "LargestEntries.hpp"
 
 namespace fs = std::filesystem;
@@ -13,15 +14,24 @@ enum class ExitCode {
   SearchPathNotDirectory,
   SearchPathEmpty,
   UnknownOption,
-  InvalidOptionValue
+  OptionValueMissing,
+  InvalidOptionValue,
+  FailedToOpenFile
 };
 
-void process_numeric_option(
-  unsigned long long & option,
-  char const * flag,
-  char const * name,
-  char const * value
+void validate_option_value_exists(
+  int argc,
+  int optionIndex,
+  char const * flagOrName
 );
+void process_numeric_option(
+  char const * flagOrName,
+  uintmax_t & optVal,
+  char const * cliVal,
+  uintmax_t min,
+  uintmax_t max
+);
+void assert_file(std::ofstream const & file, char const * name);
 
 int main(int const argc, char const * const * const argv) {
   if (argc <= 1) {
@@ -33,72 +43,90 @@ int main(int const argc, char const * const * const argv) {
 
   // handle help/version options
   for (int i = 1; i < argc; ++i) {
+    char const * const arg = argv[i];
     if (
-      strcmp(argv[i], "-h") == 0 ||
-      strcmp(argv[i], "--help") == 0
+      strcmp(arg, "-h") == 0 ||
+      strcmp(arg, "--help") == 0
     ) {
       std::cout
         << "Usage: SEARCHPATH [OPTION]...\n"
         << "Options:\n"
-        << "  -h, --help      prints out this info\n"
-        << "  -v, --version   prints out program version\n"
-        << "  -n, --number    specifies how many entries to list [default: 10]\n"
-        << "  -m, --max-size  specifies the max file size (in bytes) to consider [default: any size]\n"
-        // << "  -s, --save-output  specifies the pathname of the file to save the output to\n"
+        << "  -h, --help         prints this info\n"
+        << "  -v, --version      prints program version\n"
+        << "  -n, --number       specifies how many entries to list [default: 10]\n"
+        << "  -m, --max-size     specifies max file size (in bytes) to consider [default: any size]\n"
+        << "  -s, --save-output  specifies pathname of file to save output to"
         << std::endl;
       exit(static_cast<int>(ExitCode::Success));
     } else if (
-      strcmp(argv[i], "-v") == 0 ||
-      strcmp(argv[i], "--version") == 0
+      strcmp(arg, "-v") == 0 ||
+      strcmp(arg, "--version") == 0
     ) {
-      std::cout << "Version 1.0.0\n" << std::endl;
+      std::cout << "lslargest version 1.0.0" << std::endl;
       exit(static_cast<int>(ExitCode::Success));
     }
   }
 
-  char const * const searchPath = argv[1];
+  std::string searchPath(argv[1]);
+  if (searchPath.back() != fs::path::preferred_separator) {
+    searchPath += fs::path::preferred_separator;
+  }
 
   { // validate SEARCHPATH argument
-    if (!fs::exists(argv[1])) {
-      std::cout << "Error: " << searchPath << " does not exist\n" << std::endl;
+    if (!fs::exists(searchPath)) {
+      std::cout << "Error: " << searchPath << " does not exist" << std::endl;
       exit(static_cast<int>(ExitCode::SearchPathDoesNotExist));
     }
     if (!fs::is_directory(searchPath)) {
-      std::cout << "Error: " << searchPath << " is not a directory\n" << std::endl;
+      std::cout << "Error: " << searchPath << " is not a directory" << std::endl;
       exit(static_cast<int>(ExitCode::SearchPathNotDirectory));
     }
     if (fs::is_empty(searchPath)) {
-      std::cout << "Error: " << searchPath << " is empty\n" << std::endl;
+      std::cout << "Error: " << searchPath << " is empty" << std::endl;
       exit(static_cast<int>(ExitCode::SearchPathEmpty));
     }
   }
 
-  size_t optionNumber = 10;
-  uintmax_t optionMaxSize = static_cast<uintmax_t>(-1);
+  uintmax_t number = 10, maxSize = static_cast<uintmax_t>(-1);
+  char const * saveOutput = nullptr;
 
   // process options
   for (int i = 2; i < argc; ++i) {
+    char const * const option = argv[i];
     if (
-      strcmp(argv[i], "-n") == 0 ||
-      strcmp(argv[i], "--number") == 0
+      strcmp(option, "-n") == 0 ||
+      strcmp(option, "--number") == 0
     ) {
-      process_numeric_option(optionNumber, "-n", "--number", argv[i + 1]);
-      ++i; // skip next arg since we used it as the value for this one
+      validate_option_value_exists(argc, i, option);
+      process_numeric_option(option, number, argv[i + 1], 1, 1000);
+      ++i; // skip next arg since we used it as value for this one
     } else if (
-      strcmp(argv[i], "-m") == 0 ||
-      strcmp(argv[i], "--max-size") == 0
+      strcmp(option, "-m") == 0 ||
+      strcmp(option, "--max-size") == 0
     ) {
-      process_numeric_option(optionMaxSize, "-m", "--max-size", argv[i + 1]);
-      ++i; // skip next arg since we used it as the value for this one
+      validate_option_value_exists(argc, i, option);
+      process_numeric_option(option, maxSize, argv[i + 1], 1, UINTMAX_MAX);
+      ++i;
+    } else if (
+      strcmp(option, "-s") == 0 ||
+      strcmp(option, "--save-output") == 0
+    ) {
+      validate_option_value_exists(argc, i, option);
+      saveOutput = argv[i + 1];
+      // std::ofstream file(saveOutput);
+      // assert_file(file, saveOutput);
+      ++i;
     } else {
-      std::cout << "Error: unknown option `" << argv[i] << "`\n" << std::endl;
+      std::cout << "Error: unknown option " << option << std::endl;
       exit(static_cast<int>(ExitCode::UnknownOption));
     }
   }
 
-  LargestEntries largestEntries(optionNumber);
+  size_t entriesFound = 0;
+  LargestEntries largestEntries(searchPath.size(), number);
 
   { // search through entries within SEARCHPATH
+
     /*
     STRATEGY:
     recursively iterate through each file in SEARCHPATH
@@ -110,18 +138,17 @@ int main(int const argc, char const * const * const argv) {
 
     std::cout << "Searching... ";
 
-    size_t entriesFound = 0;
     for (
       auto const & entryPath :
       fs::recursive_directory_iterator(searchPath)
     ) {
       ++entriesFound;
-      if (fs::is_directory(entryPath)) {
+      if (entryPath.is_directory()) {
         continue;
       }
       uintmax_t const entrySize = fs::file_size(entryPath);
       if (
-        entrySize > optionMaxSize ||
+        entrySize > maxSize ||
         (largestEntries.is_full() &&
         entrySize < largestEntries.smallest_size())
       ) {
@@ -129,32 +156,67 @@ int main(int const argc, char const * const * const argv) {
       }
       largestEntries.insert(entryPath, entrySize);
     }
-    std::cout << entriesFound << " entries found\n";
   }
 
-  largestEntries.display(std::cout);
+  { // display result
+    std::cout << entriesFound << " entries found\n";
+    largestEntries.display(std::cout);
+  }
+
+  if (saveOutput == nullptr) {
+    exit(static_cast<int>(ExitCode::Success));
+  }
+
+  { // write result to output file
+    std::ofstream file(saveOutput);
+    assert_file(file, saveOutput);
+    file
+      << "Found " << entriesFound << " entries in "
+      << fs::absolute(searchPath).string() << '\n';
+    largestEntries.display(file);
+  }
 
   exit(static_cast<int>(ExitCode::Success));
 }
 
+void validate_option_value_exists(
+  int const argc,
+  int const optionIndex,
+  char const * const flagOrName
+) {
+  bool const isOptionValueMissing = optionIndex == argc - 1;
+  if (isOptionValueMissing) {
+    std::cout
+      << "Error: " << flagOrName << " is missing value" << std::endl;
+    exit(static_cast<int>(ExitCode::OptionValueMissing));
+  }
+}
+
 void process_numeric_option(
-  unsigned long long & option,
-  char const * const flag,
-  char const * const name,
-  char const * const value
+  char const * const flagOrName,
+  uintmax_t & optVal,
+  char const * const cliVal,
+  uintmax_t const min,
+  uintmax_t const max
 ) {
   try {
-    option = std::stoull(value);
+    optVal = std::stoull(cliVal);
   } catch (...) {
     std::cout
-      << "Error: failed to parse value `" << value  << "` for " << flag << '/'
-      << name << " option\n" << std::endl;
+      << "Error: failed to parse " << flagOrName << " value" << std::endl;
     exit(static_cast<int>(ExitCode::InvalidOptionValue));
   }
-  if (option == 0) {
+  if (optVal < min || optVal > max) {
     std::cout
-      << "Error: " << flag << '/' << name << " option value must be > 0\n"
-      << std::endl;
+      << "Error: " << flagOrName << " value must be in range [" << min << ", "
+      << max << ']' << std::endl;
     exit(static_cast<int>(ExitCode::InvalidOptionValue));
+  }
+}
+
+void assert_file(std::ofstream const & file, char const * const name) {
+  if (!file.is_open()) {
+    std::cout << "Error: failed to open file " << name << std::endl;
+    exit(static_cast<int>(ExitCode::FailedToOpenFile));
   }
 }

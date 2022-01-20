@@ -13,6 +13,7 @@ struct Entry {
 };
 
 class LargestEntries {
+  const size_t m_rootPathLength;
   const size_t m_max;
   std::vector<Entry> m_entries; // descending order (by size)
 
@@ -24,7 +25,7 @@ class LargestEntries {
   );
 
 public:
-  LargestEntries(size_t max);
+  LargestEntries(size_t rootPathLength, size_t max);
   bool is_full() const;
   bool is_overfilled() const;
   bool is_empty() const;

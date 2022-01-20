@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 4000000 -s ../out/debug.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 4000000 -s ../out/debug.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 4000000 -s ../out/debug.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>c:/code/linux-5.16 -n 50 -m 4000000 -s ../out/debug.txt</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
