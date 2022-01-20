@@ -163,11 +163,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\FileSystemEntries.cpp" />
+    <ClCompile Include="..\src\LargestEntries.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\FileSystemEntries.hpp" />
+    <ClInclude Include="..\src\LargestEntries.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
