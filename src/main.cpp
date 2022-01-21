@@ -53,7 +53,7 @@ int main(int const argc, char const * const * const argv) {
         << "Options:\n"
         << "  -h, --help         prints this info\n"
         << "  -v, --version      prints program version\n"
-        << "  -n, --number       specifies how many entries to list [default: 10]\n"
+        << "  -n, --number       specifies how many files to list [default: 10]\n"
         << "  -m, --max-size     specifies max file size (in bytes) to consider [default: any size]\n"
         << "  -e, --extension    specifies which file extension to consider [default: any extension]\n"
         << "  -s, --save-output  specifies pathname of file to save output to"
