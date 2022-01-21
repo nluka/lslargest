@@ -1,6 +1,6 @@
 # lslargest
 
-lslargest is a command-line utility that displays a list of the largest files within a directory. It was written as a testing tool for [Ctructure](), but may be useful otherwise.
+lslargest is a command-line utility that displays a list of the largest files within a directory. It was written as a testing tool for [Ctructure](https://github.com/nluka/Ctructure), but may be useful otherwise.
 
 ## Usage
 
