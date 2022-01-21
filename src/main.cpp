@@ -3,6 +3,7 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <string.h>
 #include "LargestEntries.hpp"
 
 namespace fs = std::filesystem;
@@ -58,13 +59,13 @@ int main(int const argc, char const * const * const argv) {
         << "  -e, --extension    specifies which file extension to consider [default: any extension]\n"
         << "  -s, --save-output  specifies pathname of file to save output to"
         << std::endl;
-      exit(static_cast<int>(ExitCode::Success));
+      return static_cast<int>(ExitCode::Success);
     } else if (
       strcmp(arg, "-v") == 0 ||
       strcmp(arg, "--version") == 0
     ) {
       std::cout << "lslargest version 1.0.0" << std::endl;
-      exit(static_cast<int>(ExitCode::Success));
+      return static_cast<int>(ExitCode::Success);
     }
   }
 
@@ -76,15 +77,15 @@ int main(int const argc, char const * const * const argv) {
   { // validate SEARCHPATH argument
     if (!fs::exists(searchPath)) {
       std::cout << "Error: " << searchPath << " does not exist" << std::endl;
-      exit(static_cast<int>(ExitCode::SearchPathDoesNotExist));
+      return static_cast<int>(ExitCode::SearchPathDoesNotExist);
     }
     if (!fs::is_directory(searchPath)) {
       std::cout << "Error: " << searchPath << " is not a directory" << std::endl;
-      exit(static_cast<int>(ExitCode::SearchPathNotDirectory));
+      return static_cast<int>(ExitCode::SearchPathNotDirectory);
     }
     if (fs::is_empty(searchPath)) {
       std::cout << "Error: " << searchPath << " is empty" << std::endl;
-      exit(static_cast<int>(ExitCode::SearchPathEmpty));
+      return static_cast<int>(ExitCode::SearchPathEmpty);
     }
   }
 
@@ -127,7 +128,7 @@ int main(int const argc, char const * const * const argv) {
       ++i;
     } else {
       std::cout << "Error: unknown option " << option << std::endl;
-      exit(static_cast<int>(ExitCode::UnknownOption));
+      return static_cast<int>(ExitCode::UnknownOption);
     }
   }
 
@@ -175,7 +176,7 @@ int main(int const argc, char const * const * const argv) {
   }
 
   if (saveOutput == nullptr) {
-    exit(static_cast<int>(ExitCode::Success));
+    return static_cast<int>(ExitCode::Success);
   }
 
   { // write result to output file
@@ -187,7 +188,7 @@ int main(int const argc, char const * const * const argv) {
     largestEntries.display(file);
   }
 
-  exit(static_cast<int>(ExitCode::Success));
+  return static_cast<int>(ExitCode::Success);
 }
 
 void validate_option_value_exists(

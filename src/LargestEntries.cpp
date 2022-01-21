@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <string>
+#include <string.h>
 #include "LargestEntries.hpp"
 
 namespace fs = std::filesystem;

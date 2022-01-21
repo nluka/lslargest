@@ -1,0 +1,7 @@
+RELEASE:
+g++ /mnt/c/code/lslargest/src/*.cpp -Ofast -Wall -std=c++17 -o lslargest_x86-64.elf
+mv ./lslargest_x86-64.elf /mnt/c/code/lslargest/bin/
+
+TESTING:
+g++ /mnt/c/code/lslargest/src/*.cpp -g -Wall -std=c++17 -o lslargest_x86-64.elf
+valgrind --leak-check=full --show-leak-kinds=all ./lslargest_x86-64.elf /mnt/c/code/linux-5.16 -s ./log.txt -m 4000000 -n 20 -e .c
