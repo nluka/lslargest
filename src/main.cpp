@@ -55,6 +55,7 @@ int main(int const argc, char const * const * const argv) {
         << "  -v, --version      prints program version\n"
         << "  -n, --number       specifies how many entries to list [default: 10]\n"
         << "  -m, --max-size     specifies max file size (in bytes) to consider [default: any size]\n"
+        << "  -e, --extension    specifies which file extension to consider [default: any extension]\n"
         << "  -s, --save-output  specifies pathname of file to save output to"
         << std::endl;
       exit(static_cast<int>(ExitCode::Success));
@@ -89,6 +90,7 @@ int main(int const argc, char const * const * const argv) {
 
   uintmax_t number = 10, maxSize = static_cast<uintmax_t>(-1);
   char const * saveOutput = nullptr;
+  char const * extension = nullptr;
 
   // process options
   for (int i = 2; i < argc; ++i) {
@@ -108,6 +110,13 @@ int main(int const argc, char const * const * const argv) {
       process_numeric_option(option, maxSize, argv[i + 1], 1, UINTMAX_MAX);
       ++i;
     } else if (
+      strcmp(option, "-e") == 0 ||
+      strcmp(option, "--extension") == 0
+    ) {
+      validate_option_value_exists(argc, i, option);
+      extension = argv[i + 1];
+      ++i;
+    } else if (
       strcmp(option, "-s") == 0 ||
       strcmp(option, "--save-output") == 0
     ) {
@@ -122,7 +131,7 @@ int main(int const argc, char const * const * const argv) {
     }
   }
 
-  size_t entriesFound = 0;
+  size_t filesFound = 0;
   LargestEntries largestEntries(searchPath.size(), number);
 
   { // search through entries within SEARCHPATH
@@ -142,15 +151,17 @@ int main(int const argc, char const * const * const argv) {
       auto const & entryPath :
       fs::recursive_directory_iterator(searchPath)
     ) {
-      ++entriesFound;
       if (entryPath.is_directory()) {
         continue;
       }
+      ++filesFound;
       uintmax_t const entrySize = fs::file_size(entryPath);
       if (
         entrySize > maxSize ||
+        (extension != nullptr &&
+          entryPath.path().extension().string() != extension) ||
         (largestEntries.is_full() &&
-        entrySize < largestEntries.smallest_size())
+          entrySize < largestEntries.smallest_size())
       ) {
         continue;
       }
@@ -159,7 +170,7 @@ int main(int const argc, char const * const * const argv) {
   }
 
   { // display result
-    std::cout << entriesFound << " entries found\n";
+    std::cout << filesFound << " files found\n";
     largestEntries.display(std::cout);
   }
 
@@ -171,7 +182,7 @@ int main(int const argc, char const * const * const argv) {
     std::ofstream file(saveOutput);
     assert_file(file, saveOutput);
     file
-      << "Found " << entriesFound << " entries in "
+      << "Found " << filesFound << " files in "
       << fs::absolute(searchPath).string() << '\n';
     largestEntries.display(file);
   }
