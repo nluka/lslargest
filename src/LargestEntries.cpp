@@ -93,7 +93,7 @@ void format_bytes(uintmax_t bytes, char * out, size_t outSize) {
   strcat(strcat(out, " "), sizes[i]);
 }
 
-void LargestEntries::display(std::ostream &os) const {
+void LargestEntries::display(std::ostream & os) const {
   if (m_entries.size() == 0) {
     os << "No matches" << std::endl;
     return;
