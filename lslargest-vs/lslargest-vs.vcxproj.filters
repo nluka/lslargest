@@ -18,12 +18,12 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\LargestEntries.cpp">
+    <ClCompile Include="..\src\FileTracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\LargestEntries.hpp">
+    <ClInclude Include="..\src\FileTracker.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

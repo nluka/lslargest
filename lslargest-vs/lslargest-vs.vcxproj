@@ -169,11 +169,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\LargestEntries.cpp" />
+    <ClCompile Include="..\src\FileTracker.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\LargestEntries.hpp" />
+    <ClInclude Include="..\src\FileTracker.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

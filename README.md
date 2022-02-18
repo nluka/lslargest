@@ -4,7 +4,7 @@ lslargest is a command-line utility that displays a list of the largest files wi
 
 ## Usage
 
-Command-line usage: `SEARCHPATH` `[OPTION]...`
+Command-line usage: `<root> [<option> [<value>]]...`
 
 Use `-h`/`--help` for more details regarding options.
 
