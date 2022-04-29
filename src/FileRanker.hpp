@@ -5,14 +5,16 @@
 #include <filesystem>
 #include <ostream>
 
+namespace lsl {
+
 struct File {
-  std::filesystem::path fsPath;
-  uintmax_t size;
-  File();
+  std::filesystem::path m_fsPath;
+  uintmax_t m_size;
+
   File(std::filesystem::path const &fsPath, uintmax_t size);
 };
 
-class FileTracker {
+class FileRanker {
   size_t const m_rootPathLength;
   size_t const m_max;
   std::vector<File> m_entries; // descending order (by size)
@@ -25,7 +27,7 @@ class FileTracker {
   );
 
 public:
-  FileTracker(size_t rootPathLength, size_t max);
+  FileRanker(size_t rootPathLength, size_t max);
   bool        is_full() const;
   bool        is_overfilled() const;
   bool        is_empty() const;
@@ -33,7 +35,9 @@ public:
   void        insert(std::filesystem::path const &fsPath, uintmax_t size);
   size_t      size() const;
   File const &operator[](size_t index) const;
-  void        printContents(std::ostream &os) const;
+  void        print(std::ostream &os) const;
 };
+
+} // namespace lsl
 
 #endif // LSLARGEST_LARGEST_ENTRIES_HPP
