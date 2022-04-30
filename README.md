@@ -14,3 +14,7 @@ Command-line usage: `<root> [<option> [<value>]]...`
 | `--extensions` | `-e`     | CSV                     | all     | which file extensions to consider |
 | `--save`       | `-s`     | pathname                | nil     | pathname of file to write output into |
 | `--console`    | `-c`     | 0 \| 1                  | N/A     | whether file rankings are printed to console |
+
+## Code Style
+
+This project follows my [cpp-style-guide](https://github.com/nluka/cpp-style-guide).
