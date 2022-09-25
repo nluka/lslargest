@@ -1,5 +1,7 @@
 # lslargest
 
+**This project has been superseded and is now part of the [fileutil](https://github.com/nluka/fileutil) project as the `sizerank` function.**
+
 lslargest is a command-line utility that displays a ranked list of the largest files in a directory. It was written as a utility for the development of [Ctructure](https://github.com/nluka/Ctructure), but may be useful otherwise.
 
 ## Usage
